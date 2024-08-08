@@ -8,5 +8,7 @@
 ```
 
 git clone https://github.com/cyp-jlu-ai/BA-LoRA.git
+cd BA-LoRA
+pip install -r requirements.txt
 
 ```
