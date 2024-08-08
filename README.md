@@ -5,45 +5,32 @@
 
 ## Setup
 
-### 1. Clone the Repository
+1. Clone the repository:
+    ```bash
+    git clone https://github.com/cyp-jlu-ai/BA-LoRA.git
+    ```
 
-First, clone the repository:
-```bash
-git clone https://github.com/cyp-jlu-ai/BA-LoRA.git
-```
+2. Navigate to the directory:
+    ```bash
+    cd BA-LoRA
+    ```
 
-### 2. Navigate to the Directory
+3. Create and activate a Conda environment:
+    ```bash
+    conda create --name ba-lora python=3.9
+    conda activate ba-lora
+    ```
 
-Then, navigate to the cloned directory:
-```bash
-cd BA-LoRA
-```
-
-### 3. Create and Activate Conda Environment
-
-Create a new Conda environment and specify Python version 3.9:
-```bash
-conda create --name ba-lora python=3.9
-```
-
-Activate the newly created environment:
-```bash
-conda activate ba-lora
-```
-
-### 4. Install Required Packages
-
-Use `pip` to install the required packages:
-```bash
-pip install -r requirements.txt
-```
+4. Install required packages:
+    ```bash
+    pip install -r requirements.txt
+    ```
 
 ## Usage
 
-### Run the Script
-
-Run the following script:
+Run the script:
 ```bash
 python /scripts/ba-lora.sh
 ```
+
 
