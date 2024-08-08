@@ -9,6 +9,7 @@
 
 git clone https://github.com/cyp-jlu-ai/BA-LoRA.git
 cd BA-LoRA
+conda create --name ba-lora python=3.9
 pip install -r requirements.txt
 
 ```
@@ -17,6 +18,6 @@ pip install -r requirements.txt
 
 ```
 
-python /src/tarin.py
+python /scripts/ba-lora.sh
 
 ```
