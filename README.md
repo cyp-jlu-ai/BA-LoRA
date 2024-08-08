@@ -5,11 +5,26 @@
 
  ## Setup
 
+
+
+First, clone the repo:
+```
+git clone https://github.com/cyp-jlu-ai/BA-LoRA.git
 ```
 
-git clone https://github.com/cyp-jlu-ai/BA-LoRA.git
+Then,
+```
 cd BA-LoRA
+```
+
+To install the required packages, you can create a conda environment:
+```
 conda create --name ba-lora python=3.9
+```
+
+
+then use pip to install required packages:
+```
 pip install -r requirements.txt
 
 ```
