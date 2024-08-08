@@ -14,3 +14,9 @@ pip install -r requirements.txt
 ```
 
 ## Usage
+
+```
+
+python /src/tarin.py
+
+```
