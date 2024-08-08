@@ -23,4 +23,7 @@ python ba-lora.py \
     --logging_steps 1 \
     --bf16 True \
     --tf32 True \
+    --lcr=0.0001 \
+    --ldr=0.0003 \
+    --lsvd-loss-weight=0.0001 \
     --report_to none
