@@ -12,6 +12,9 @@ from datasets import load_dataset
 from peft import LoraConfig, get_peft_model, PeftModel
 import torch.nn as nn
 import numpy as np
+from torch.nn.functional import kl_div, softmax
+from transformers import Trainer
+import torch.linalg as linalg
 from datasets import load_metric
 
 IGNORE_INDEX = -100
@@ -20,34 +23,6 @@ PROMPT = (
     "Write a response that appropriately completes the request.\n\n"
     "### Instruction:\n{instruction}\n\n### Response:"
 )
-
-
-class CustomTrainer(Trainer):
-    # def compute_loss(self, model, inputs, return_outputs=False):
-
-    #     outputs = model(**inputs)
-    #     loss = outputs["loss"] if isinstance(outputs, dict) else outputs[0]
-    #     return (loss, outputs) if return_outputs else loss
-    def compute_loss(self, model, pretrain_model, inputs, lambda1, lambda2, lambda3, alpha, return_outputs=False):
-        outputs = model(**inputs)
-        loss = outputs["loss"] if isinstance(outputs, dict) else outputs[0]
-
-        with torch.no_grad():
-            pretrain_outputs = pretrain_model(**inputs)
-        kl_loss = F.kl_div(F.log_softmax(outputs.logits, dim=-1), F.softmax(pretrain_outputs.logits, dim=-1), reduction='batchmean')
-        
-        entropy_loss = -torch.mean(torch.sum(F.softmax(outputs.logits, dim=-1) * F.log_softmax(outputs.logits, dim=-1), dim=-1))
-        
-        logits = outputs.logits.view(-1, outputs.logits.size(-1))
-        _, s, _ = torch.svd(logits)
-        top_k_singular_values = s[:k]
-        svd_loss = -(torch.sum(top_k_singular_values) / torch.sum(s) + alpha * torch.var(top_k_singular_values))
-
-
-        total_loss = loss + lambda1 * kl_loss + lambda2 * entropy_loss + lambda3 * svd_loss
-        
-        return (total_loss, outputs) if return_outputs else total_loss
-    
     
 
 @dataclass
@@ -77,6 +52,44 @@ def preprocess(sources: Sequence[str], targets: Sequence[str], tokenizer: transf
         label[:source_len] = IGNORE_INDEX
     return dict(input_ids=input_ids, labels=labels)
 
+class CustomTrainer(Trainer):
+    def __init__(self, *args, k=0.3, lambda1=1e-4, lambda2=3e-4, lambda3=1e-4, pre_trained_model=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.k = k
+        self.lambda1 = lambda1
+        self.lambda2 = lambda2
+        self.lambda3 = lambda3
+        self.pre_trained_model = pre_trained_model
+
+    def compute_loss(self, model, inputs, return_outputs=False):
+        outputs = model(**inputs)
+        loss = outputs["loss"] if isinstance(outputs, dict) else outputs[0]
+
+        # Consistency Regularization
+        with torch.no_grad():
+            pre_trained_outputs = self.pre_trained_model(**inputs)
+        pre_trained_probs = softmax(pre_trained_outputs.logits, dim=-1)
+        fine_tuned_probs = softmax(outputs.logits, dim=-1)
+        consistency_loss = kl_div(fine_tuned_probs.log(), pre_trained_probs, reduction='batchmean')
+
+        # Diversity Regularization
+        diversity_loss = -torch.sum(fine_tuned_probs * fine_tuned_probs.log()) / fine_tuned_probs.size(0)
+
+        # Singular Value Decomposition Regularization
+        u, s, v = linalg.svd(fine_tuned_probs)
+        top_k_singular_values = s[:int(self.k * len(s))]
+        singular_value_ratio = torch.sum(top_k_singular_values) / torch.sum(s)
+        singular_value_variance = torch.var(top_k_singular_values)
+        svd_loss = -(singular_value_ratio + self.lambda1 * singular_value_variance)
+
+        # Overall Loss
+        total_loss = (loss + 
+                      self.lambda1 * consistency_loss + 
+                      self.lambda2 * diversity_loss + 
+                      self.lambda3 * svd_loss)
+
+        return (total_loss, outputs) if return_outputs else total_loss
+        
 @dataclass
 class DataCollatorForSupervisedDataset(object):
     tokenizer: transformers.PreTrainedTokenizer
