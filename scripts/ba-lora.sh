@@ -2,7 +2,7 @@ RESIDUAL_MODEL="/path/to/your/model"
 OUTPUT="/path/to/your/output"
 DATA_PATH="/path/to/your/data"
 
-python pissa.py \
+python ba-lora.py \
     --model_name_or_path $RESIDUAL_MODEL \
     --output_dir $OUTPUT \
     --adapter_name_or_path pissa_init \
