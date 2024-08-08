@@ -26,13 +26,10 @@ conda create --name ba-lora python=3.9
 then use pip to install required packages:
 ```
 pip install -r requirements.txt
-
 ```
 
 ## Usage
 
 ```
-
 python /scripts/ba-lora.sh
-
 ```
