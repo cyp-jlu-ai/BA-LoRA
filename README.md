@@ -15,7 +15,7 @@
     cd BA-LoRA
     ```
 
-3. Create and activate a Conda environment:
+3. Create and activate a conda environment:
     ```bash
     conda create --name ba-lora python=3.9
     conda activate ba-lora
