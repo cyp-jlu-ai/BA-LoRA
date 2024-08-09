@@ -30,7 +30,8 @@
 
 Run the script:
 ```bash
-python /scripts/ba-lora.sh
+sh scripts/balora.sh
+
 ```
 
 
