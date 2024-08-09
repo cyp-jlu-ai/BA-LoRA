@@ -30,7 +30,7 @@
 
 Run the script:
 ```bash
-sh scripts/balora.sh
+sh scripts/ba-lora.sh
 
 ```
 
