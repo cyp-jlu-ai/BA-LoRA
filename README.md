@@ -34,4 +34,15 @@ sh scripts/ba-lora.sh
 
 ```
 
+## Citation
 
+If you find this project useful in your research or work, please consider citing it:
+
+```
+@article{chang2024bias,
+  title={Bias-Aware Low-Rank adaptation: Mitigating catastrophic inheritance of large language models},
+  author={Chang, Yupeng and Chang, Yi and Wu, Yuan},
+  journal={arXiv preprint arXiv:2408.04556},
+  year={2024}
+}
+```
