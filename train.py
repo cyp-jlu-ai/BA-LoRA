@@ -8,7 +8,6 @@ from typing import Optional, Dict, Sequence, List, Literal
 
 import torch
 import transformers
-from typing import Dict, Union, Any
 from transformers import Trainer, TrainingArguments, AutoModelForCausalLM, AutoTokenizer
 from datasets import load_dataset
 from peft import LoraConfig, get_peft_model, PeftModel
@@ -27,8 +26,12 @@ PROMPT = (
 
 @dataclass
 class BA_LoRA_TrainingArguments(transformers.TrainingArguments):
+    """
+    Extended TrainingArguments to include BA-LoRA specific parameters.
+    """
     model_name_or_path: Optional[str] = field(default="facebook/opt-125m")
     adapter_name_or_path: Optional[str] = field(default=None)
+    pretrained_model_name_or_path: Optional[str] = field(default=None, metadata={"help": "Name or path of the pre-trained model for consistency regularization."})
     data_path: str = field(default=None, metadata={"help": "Path to the training data."})
     dataset_split: str = field(default="train[:100000]", metadata={"help": "Dataset split to use."})
     dataset_field: List[str] = field(default=None, metadata={"help": "Fields of dataset input and output."})
@@ -194,7 +197,10 @@ class CustomTrainer(Trainer):
             logits = logits.view(logits.size(0), -1)
 
         # Compute SVD
-        u, s, v = linalg.svd(logits, full_matrices=False)
+        with torch.no_grad():
+            u, s, v = linalg.svd(logits, full_matrices=False)
+        
+        # Select top k singular values
         top_k_singular = s[:, :self.k]
         sum_top_k = top_k_singular.sum(dim=1)
         sum_all = s.sum(dim=1) + 1e-10  # Add epsilon to prevent division by zero
@@ -207,6 +213,9 @@ class CustomTrainer(Trainer):
 
 @dataclass
 class DataCollatorForSupervisedDataset(object):
+    """
+    Data collator that dynamically pads the inputs and labels.
+    """
     tokenizer: transformers.PreTrainedTokenizer
 
     def __call__(self, instances: Sequence[Dict]) -> Dict[str, torch.Tensor]:
@@ -319,8 +328,15 @@ def train():
 
     # Load pre-trained model for consistency regularization if applicable
     pre_trained_model = None
-    if script_args.adapter_name_or_path is not None or script_args.lora_r is not None:
-        # Assuming the pre-trained model is the same as the main model
+    if script_args.pretrained_model_name_or_path is not None:
+        print(f"Loading pre-trained model for consistency regularization from {script_args.pretrained_model_name_or_path}")
+        pre_trained_model = transformers.AutoModelForCausalLM.from_pretrained(script_args.pretrained_model_name_or_path)
+        pre_trained_model.eval()
+        for param in pre_trained_model.parameters():
+            param.requires_grad = False
+    elif script_args.adapter_name_or_path is not None or script_args.lora_r is not None:
+        # If no separate pre-trained model is provided, use the main model
+        print("Using the main model as the pre-trained model for consistency regularization.")
         pre_trained_model = transformers.AutoModelForCausalLM.from_pretrained(script_args.model_name_or_path)
         pre_trained_model.eval()
         for param in pre_trained_model.parameters():
