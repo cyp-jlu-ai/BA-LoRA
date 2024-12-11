@@ -1,6 +1,13 @@
+#!/bin/bash
+
+# Paths
 RESIDUAL_MODEL="/path/to/your/model"
 OUTPUT="/path/to/your/output"
 DATA_PATH="/path/to/your/data"
+PRETRAINED_MODEL="/path/to/your/pretrained_model"  # Optional: Specify if using a separate pre-trained model
+
+# Training parameters
+TASK_TYPE="nlg"  # Set to "nlu" or "nlg" based on your task
 
 python train.py \
     --model_name_or_path $RESIDUAL_MODEL \
@@ -10,6 +17,8 @@ python train.py \
     --data_path $DATA_PATH \
     --dataset_split "train[:100000]" \
     --dataset_field query response \
+    --task_type $TASK_TYPE \
+    --pretrained_model_name_or_path $PRETRAINED_MODEL \  # Optional: Include if using a separate pre-trained model
     --num_train_epochs 1 \
     --per_device_train_batch_size 1 \
     --gradient_accumulation_steps 128 \
@@ -17,13 +26,14 @@ python train.py \
     --save_steps 100 \
     --save_total_limit 1 \
     --learning_rate 2e-5 \
-    --weight_decay 0. \
+    --weight_decay 0.0 \
     --warmup_ratio 0.03 \
     --lr_scheduler_type "cosine" \
     --logging_steps 1 \
     --bf16 True \
     --tf32 True \
-    --lcr=0.0001 \
-    --ldr=0.0003 \
-    --lsvd-loss-weight=0.0001 \
+    --lambda1 0.0001 \
+    --lambda2 0.0003 \
+    --lambda3 0.0001 \
+    --k 3 \
     --report_to none
