@@ -1,22 +1,17 @@
-#!/bin/bash
+# run_training.sh
 
-# Paths
-RESIDUAL_MODEL="/path/to/your/model"
-OUTPUT="/path/to/your/output"
+PRE_TRAINED_MODEL_PATH="/path/to/your/model"
+OUTPUT_PATH="/path/to/your/output"
 DATA_PATH="/path/to/your/data"
 
-# Training parameters
-TASK_TYPE="nlg"  # Set to "nlu" or "nlg" based on your task
-
-python train.py \
-    --model_name_or_path $RESIDUAL_MODEL \
-    --output_dir $OUTPUT \
+python ./train.py \
+    --model_name_or_path $PRE_TRAINED_MODEL_PATH \
+    --output_dir $OUTPUT_PATH \
     --adapter_name_or_path pissa_init \
     --init_lora_weights pissa \
     --data_path $DATA_PATH \
     --dataset_split "train[:100000]" \
     --dataset_field query response \
-    --task_type $TASK_TYPE \
     --num_train_epochs 1 \
     --per_device_train_batch_size 1 \
     --gradient_accumulation_steps 128 \
@@ -30,8 +25,7 @@ python train.py \
     --logging_steps 1 \
     --bf16 True \
     --tf32 True \
-    --lambda1 0.0001 \
-    --lambda2 0.0003 \
-    --lambda3 0.0001 \
-    --k 3 \
+    --lambda1=0.0001 \
+    --lambda2=0.0003 \
+    --lambda3=0.0001 \
     --report_to none
