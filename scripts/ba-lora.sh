@@ -4,7 +4,6 @@
 RESIDUAL_MODEL="/path/to/your/model"
 OUTPUT="/path/to/your/output"
 DATA_PATH="/path/to/your/data"
-PRETRAINED_MODEL="/path/to/your/pretrained_model"  # Optional: Specify if using a separate pre-trained model
 
 # Training parameters
 TASK_TYPE="nlg"  # Set to "nlu" or "nlg" based on your task
@@ -18,7 +17,6 @@ python train.py \
     --dataset_split "train[:100000]" \
     --dataset_field query response \
     --task_type $TASK_TYPE \
-    --pretrained_model_name_or_path $PRETRAINED_MODEL \  # Optional: Include if using a separate pre-trained model
     --num_train_epochs 1 \
     --per_device_train_batch_size 1 \
     --gradient_accumulation_steps 128 \
